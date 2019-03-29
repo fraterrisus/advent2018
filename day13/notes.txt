@@ -1,0 +1,15 @@
+1. The initial board consists of
+  - |      straight lines (horiz, vert.)
+  / \      curves (cars change facing when they *enter*)
+  +        intersections (places where two straight lines meet)
+  > < v ^  cars sitting on a straight piece of track
+
+2. When a car enters a curve, it changes facing.
+
+3. When a car enters an intersection, it changes facing based on the following program:
+  1st: turn left
+  2nd: go straight (do not change facing)
+  3rd: turn right
+  -back to top-
+
+4. A tick is resolved from top (left-to-right) to bottom.
