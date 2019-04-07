@@ -1,0 +1,27 @@
+Input
+  # wall
+  . floor
+  G goblin
+  E elf
+
+Units
+  hit_points (HP)
+  attack_power (AP)
+
+Reading order: standard (0,0) - (10,0) then (0,1) - (10,1)
+
+Round loop
+  Each unit completes its actions before the next unit goes
+  1. move into range
+    a. identify all possible target units; if empty, game over
+    b. if I'm already adjacent to a target unit, skip to step 2
+    c. find all open floor square adjacent to target units that aren't occupied
+    d. find the shortest paths to all target squares
+       this eliminates unreachable targets
+       if the list is empty, skip to step 2
+    e. pick a target square, breaking ties in reading order
+    f. move one step closer to the target square, breaking ties in reading order
+  2. attack enemy
+    a. identify all adjacent target units
+    b. select the one with the lowest HP, breaking ties in reading order
+    c. target HP -= my AP; if target HP <= 0, target dies and is removed from the board
