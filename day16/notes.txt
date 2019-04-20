@@ -1,0 +1,19 @@
+Processor simulator
+#reg = 4
+instructions = [opcode] [input A] [input B] [output C]
+  addr [C] = [A] + [B]
+  addi [C] = [A] + B
+  mulr (multiply)
+  muli
+  banr (bitwise AND)
+  bani
+  borr (bitwise OR)
+  bori
+  setr [C] = [A]
+  seti [C] = A
+  gtir [C] = A > [B]
+  gtri [C] = [A] > B
+  gtrr [C] = [A] > [B]
+  eqir [C] = A == [B]
+  eqri [C] = [A] == B
+  eqrr [C] = [A] == [B]
