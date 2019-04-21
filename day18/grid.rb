@@ -4,10 +4,31 @@ class Grid
     @squares = Array.new((dim+2) * (dim+2), :open)
   end
 
+  def copy
+    g = Grid.new(@dim)
+    g.squares = @squares.dup
+    g
+  end
+
+  def eq(other)
+    @squares == other.squares
+  end
+
+  private
   def index(x,y)
     x + 1 + ((y+1) * (@dim+2))
   end
 
+  protected
+  def squares
+    @squares
+  end
+
+  def squares=(s)
+    @squares=(s)
+  end
+
+  public
   def set(x,y,value)
     @squares[index(x,y)] = value
   end
@@ -33,6 +54,37 @@ class Grid
     i += @dim + 2
     pts += @squares[i..i+2]
     pts
+  end
+
+  def nearby_value(x,y)
+    pts = []
+    i = index(x-1,y-1)
+    pts += @squares[i..i+2]
+    i += @dim + 2
+    pts << @squares[i]
+    base = @squares[i+1]
+    pts << @squares[i+2]
+    i += @dim + 2
+    pts += @squares[i..i+2]
+
+    value = 0
+    case base
+    when :tree
+      value = 100
+    when :yard
+      value = 200
+    end
+
+    pts.compact.each do |s|
+      case s
+      when :tree
+        value += 1
+      when :yard
+        value += 10
+      end
+    end
+
+    value
   end
 
   def nearby(x,y)

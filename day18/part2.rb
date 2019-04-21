@@ -6,7 +6,6 @@ iters = ARGV[1].to_i || raise
 lines = IO.readlines(ARGV[0]).map(&:rstrip)
 dim = lines[0].length
 this_grid = Grid.new(dim)
-next_grid = Grid.new(dim)
 lines.each_with_index do |row,y|
   row.split(//).each_with_index do |sq,x|
     case sq
@@ -20,9 +19,21 @@ lines.each_with_index do |row,y|
       raise "Unknown char #{sq} at line #{y} char #{x}"
     end
     this_grid.set(x,y,val)
-    next_grid.set(x,y,val)
   end
 end
+
+# This is a common Game of Life optimization that I played around with after
+# finding references online. It helped get the runtime down by about a factor
+# of 2. Of course that's nothing compared to the effects we get by adding loop
+# detection later on...
+#
+# The idea is to build a lookup table that you can index on the state of the 9
+# nearby squares (including the current square). This is far more efficient
+# than computing the new state every time, although the act of looking up the
+# neighbors is still significant. I played around with a couple of different
+# implementations of the lookup index; a hash of nine symbols was slower than
+# the "part 1" implementation, but an array indexed on a constructed integer
+# was much faster.
 
 def build_lookup_table
   lookup = Hash.new
@@ -42,6 +53,14 @@ def build_lookup_table
         symbols.each do |d|
           counts[d] += 1
           symbols.each do |e|
+            case e
+            when :open
+              base_value = 0
+            when :tree
+              base_value = 100
+            when :yard
+              base_value = 200
+            end
             symbols.each do |f|
               counts[f] += 1
               symbols.each do |g|
@@ -50,6 +69,7 @@ def build_lookup_table
                   counts[h] += 1
                   symbols.each do |i|
                     counts[i] += 1
+                    value = base_value + (counts[:yard] * 10) + counts[:tree]
 
                     case e
                     when :open
@@ -72,7 +92,7 @@ def build_lookup_table
                       end
                     end
 
-                    lookup[[a,b,c,d,e,f,g,h,i]] = newval
+                    lookup[value] = newval
 
                     #puts "#{[a,b,c,d,e,f,g,h,i].inspect} #{counts.inspect} #{newval}"
 
@@ -97,18 +117,38 @@ def build_lookup_table
 end
 
 lookup = build_lookup_table
+grids = []
 
-iters.times do
+iters.times do |iter|
   #this_grid.disp
+  next_grid = Grid.new(dim)
   dim.times do |y|
     dim.times do |x|
-      newval = lookup[this_grid.nearby_grid(x,y)]
+      newval = lookup[this_grid.nearby_value(x,y)]
       next_grid.set(x,y,newval)
     end
   end
-  tmp = this_grid
+
+  # I admit I had to go look through the Reddit forum to get the hint that the
+  # game state would loop back on itself. Then it was just a matter of
+  # detecting the loop and using modulo arithmetic to fast-forward to the right
+  # state. (and preventing the obvious off-by-one error)
+
+  grids.each_with_index do |g,i|
+    if g.eq(next_grid)
+      puts "Grid ##{i} matches grid ##{iter}, fast forwarding"
+      loop_size = iter - i
+      puts "Loop is size #{loop_size}"
+      final_index = (((iters - 1) - i) % loop_size) + i
+      puts "Iteration #{iters} == #{final_index}"
+      this_grid = grids[final_index]
+      puts "Score: #{this_grid.score}"
+      exit
+    end
+  end
+
+  grids << next_grid.copy
   this_grid = next_grid
-  next_grid = tmp
 end
 
 #this_grid.disp
