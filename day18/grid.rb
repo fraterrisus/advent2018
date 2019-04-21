@@ -1,7 +1,7 @@
 class Grid
   def initialize(dim)
     @dim = dim
-    @squares = Array.new((dim+2) * (dim+2))
+    @squares = Array.new((dim+2) * (dim+2), :open)
   end
 
   def index(x,y)
@@ -22,6 +22,17 @@ class Grid
 
   def get_index(i)
     @squares[i]
+  end
+
+  def nearby_grid(x,y)
+    pts = []
+    i = index(x-1,y-1)
+    pts += @squares[i..i+2]
+    i += @dim + 2
+    pts += @squares[i..i+2]
+    i += @dim + 2
+    pts += @squares[i..i+2]
+    pts
   end
 
   def nearby(x,y)
