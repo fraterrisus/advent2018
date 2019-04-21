@@ -4,11 +4,10 @@ require './grid.rb'
 
 iters = ARGV[1].to_i || raise
 lines = IO.readlines(ARGV[0]).map(&:rstrip)
-this_grid = Grid.new
-next_grid = Grid.new
-maxx = 0
+dim = lines[0].length
+this_grid = Grid.new(dim)
+next_grid = Grid.new(dim)
 lines.each_with_index do |row,y|
-  maxx = row.length if row.length > maxx
   row.split(//).each_with_index do |sq,x|
     case sq
     when '.'
@@ -24,35 +23,36 @@ lines.each_with_index do |row,y|
     next_grid.set(x,y,val)
   end
 end
-maxy = lines.count
 
 iters.times do
-  #this_grid.disp [0,maxx,0,maxy]
-  maxy.times do |y|
-    maxx.times do |x|
-      sq = this_grid.get(x,y)
+  #this_grid.disp
+  dim.times do |y|
+    dim.times do |x|
+      i = this_grid.index(x,y)
+      sq = this_grid.get_index(i)
       n = this_grid.nearby(x,y)
       #puts "(#{x},#{y}) : #{n.inspect}"
       case sq
       when :open
         if n[:tree] > 2
-          next_grid.set(x,y,:tree)
+          newval = :tree
         else
-          next_grid.set(x,y,:open)
+          newval = :open
         end
       when :tree
         if n[:yard] > 2
-          next_grid.set(x,y,:yard)
+          newval = :yard
         else
-          next_grid.set(x,y,:tree)
+          newval = :tree
         end
       when :yard
         if n[:yard] > 0 && n[:tree] > 0
-          next_grid.set(x,y,:yard)
+          newval = :yard
         else
-          next_grid.set(x,y,:open)
+          newval = :open
         end
       end
+      next_grid.set_index(i,newval)
     end
   end
   tmp = this_grid
@@ -60,5 +60,5 @@ iters.times do
   next_grid = tmp
 end
 
-#this_grid.disp [0,maxx,0,maxy]
+#this_grid.disp
 puts "Score: #{this_grid.score}"
