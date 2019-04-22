@@ -1,0 +1,83 @@
+I started by running the simulator from the previous part on the code, dumping
+a log, and figuring out what was going on. The only place that register 0 is
+ever accessed is instruction #28 so mostly it was a case of figuring out when
+we get there and what the value of register 5 is as that point. It turns out
+that's the answer to part 1; if [0] == [5] the first time we get there, the
+code halts.
+
+
+input = 0
+
+000: [5] = 123
+001: [5] = [5] & 0x01c8
+002: [5] = ([5] == 72) : true
+003: goto 4 or 5?
+005: [5] = 0
+006: [4] = [5] | 65536 : loop B limit is set to 65536 / 256 = 256
+007: [5] = 0xccf121
+--- loop a1 : line 8
+008: [3] = [4] & 0x000000ff
+009: [5] = [5] + [3]
+010: [5] = [5] & 0x00ffffff
+011: [5] = [5] * 65899
+012: [5] = [5] & 0x00ffffff
+013: [3] = ([4] < 256)
+014: goto 15 or 16?
+015: goto 17
+017: [3] = 0
+--- loop b1.1 {17}
+018: [2] = [3] + 1
+019: [2] = [2] * 256
+020: [2] = ([2] > [4])   : false
+021: goto 22 or 23?
+022: goto 24
+024: [3]++
+025: goto 18
+--- loop b1.2...256  {24 ... 1809}
+018: [2] = [3] + 1       : [3] = 256
+019: [2] = [2] * 256     : [2] = 65792
+020: [2] = ([2] > [4])   : true
+021: goto 22 or 23?
+023: goto 26
+026: [4] = [3]           : [4] = 256
+027: goto 8
+--- loop a2  {1816}
+008: [3] = [4] & 0x000000ff
+009: [5] = [5] + [3]
+010: [5] = [5] & 0x00ffffff
+011: [5] = [5] * 65899
+012: [5] = [5] & 0x00ffffff
+013: [3] = ([4] < 256)
+014: goto 15 or 16?
+015: goto 17
+017: [3] = 0
+--- loop b2.1  {1825}
+018: [2] = [3] + 1
+019: [2] = [2] * 256
+020: [2] = ([2] > [4])    : false
+021: goto 22 or 23?
+022: goto 24
+024: [3]++
+025: goto 18
+--- loop b2.2  {1832}
+018: [2] = [3] + 1
+019: [2] = [2] * 256
+020: [2] = ([2] > [4])    : true
+021: goto 22 or 23?
+023: goto 26
+026: [4] = [3]            : [4] = 1
+027: goto 8
+--- loop a3  {1839}
+008: [3] = [4] & 0x000000ff  : [3] = 1
+009: [5] = [5] + [3]
+010: [5] = [5] & 0x00ffffff
+011: [5] = [5] * 65899
+012: [5] = [5] & 0x00ffffff
+013: [3] = ([4] < 256)       : true
+014: goto 15 or 16?
+016: goto 28
+--- {1847}
+028: [3] = ([5] == [0])      : false     [5] = 3115806   <------
+029: goto 30 or 31?
+030: goto 6
+
